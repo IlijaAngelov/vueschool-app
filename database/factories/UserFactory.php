@@ -31,6 +31,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'timezone' => fake()->randomElement(['CET', 'CST', 'GMT+1']),
+            'is_synced' => false,
         ];
     }
 

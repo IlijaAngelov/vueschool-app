@@ -21,6 +21,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->string('timezone');
+            $table->string('is_synced')->default(false);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
