@@ -21,4 +21,6 @@ Route::get('/users', [UserController::class, 'users'])->middleware('throttle:bat
 // is this really needed??
 Route::get('/individuals', [UserController::class, 'individuals'])->middleware('throttle:individuals');
 
-Route::get('/user/{id}', [UserController::class, 'user'])->middleware('throttle:user');
+Route::get('/user/{id}', [UserController::class, 'updateUser'])->middleware('throttle:updateUser');
+
+Route::get('/user/update/{id}', [UserController::class, 'checkForUserUpdate'])->middleware('throttle:updateUser');

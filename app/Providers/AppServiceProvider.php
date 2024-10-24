@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Requests for specific user
-        RateLimiter::for('user', function (Request $request) {
+        RateLimiter::for('updateUser', function (Request $request) {
             return Limit::perHour(40000);
         });
 

@@ -55,7 +55,7 @@ class UserController extends Controller
 //            ]);
 //        }
     }
-    public function user(){
+    public function updateUser(){
 
         $data = Http::get((env('API_URL') . '/' . rand(1, 100)))->json();
         $user = User::where('email', $data['email'])->first();
@@ -68,5 +68,30 @@ class UserController extends Controller
             'timezone' => $data['address']['stateCode'],
             'is_synced' => 1,
         ]);
+    }
+
+    public function checkForUserUpdate(Request $request){
+        $user = User::findOrFail($request->id);
+
+        // Making new APi request for the user
+        $data = Http::get((env('API_URL') . '/' . $user->id))->json();
+        // Check if user has been updated, then conitnue to save the data, else abort
+        $dataToUpdate = [];
+        $data['updated_at'] = now();
+        if($data['updated_at'] > $user['updated_at']){
+            if(isset($data['firstName'])){
+                $dataToUpdate['firstname'] = $data['firstName'];
+            }
+            if(isset($data['lastName'])){
+                $dataToUpdate['lastname'] = $data['lastName'];
+            }
+            if(isset($data['address']['stateCode'])){
+                $dataToUpdate['timezone'] = $data['address']['stateCode'];
+            }
+            $dataToUpdate['is_synced'] = 1;
+            $dataToUpdate['updated_at'] = now();
+
+            User::where('email', $user->email)->update($dataToUpdate);
+        }
     }
 }
