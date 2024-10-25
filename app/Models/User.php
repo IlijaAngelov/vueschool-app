@@ -22,7 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'timezone',
-        'is_synced'
+        'is_synced',
+        'updated_at'
     ];
 
     /**
