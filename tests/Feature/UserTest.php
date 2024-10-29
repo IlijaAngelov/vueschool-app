@@ -31,6 +31,7 @@ test('api returns user data', function () {
     ]);
 });
 
+// Modify/Create new/better version for updating the user data without fake, make an API call ( use the method from Controller )
 test('update user data from an external API', function () {
 
     $oldUser = User::factory()->create([
@@ -61,10 +62,19 @@ test('update user data from an external API', function () {
     ];
     User::where('id', $oldUser->id)->update($dataToUpdate);
 
-    $updatedUser = User::find(1);
-    expect($updatedUser->firstname)->toBe('Newfirstname')
-        ->and($updatedUser->lastname)->toBe('NewLastName')
-        ->and($updatedUser->timezone)->toBe('GMT+1')
-        ->and($updatedUser->updated_at->diffInSeconds(now()))->toBeLessThan(2); // Allows a 2-second margin for `updated_at`
+    expect(User::latest()->first())
+        ->firstname->toBe('Newfirstname')
+        ->lastname->toBe('NewLastName')
+        ->timezone->toBe('GMT+1')
+        ->is_synced->toBe(1)
+        ->updated_at->diffInSeconds(now())->toBeLessThan(2);
 
 });
+
+test('rate limiting', function () {
+
+})->todo();
+
+test('jobs in queue', function () {
+
+})->todo();
