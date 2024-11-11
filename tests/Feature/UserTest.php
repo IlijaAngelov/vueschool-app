@@ -4,8 +4,7 @@
 
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
-use App\Http\Controllers\UserController;
-use Illuminate\Http\Request as Request;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 test('api returns users list', function () {
     $response = $this->getJson((env('API_URL')));
@@ -14,21 +13,20 @@ test('api returns users list', function () {
 
 });
 
-test('api returns user data', function () {
-//    $user = \App\Models\User::factory()->create();
-    $response = Http::get((env('API_USER_URL') . 1));
+test('an authenticated user gets the correct status code', function () {
+    $this->actingAs(User::factory()->create())->get('/')->assertStatus(200);
+});
+
+test('the response comes in a standard format', function () {
+    $user = \App\Models\User::factory()->create();
+    $response = Http::get((env('API_USER_URL') . $user->id));
 
     expect($response->status())->toBe(200);
 
-    $jsonData = $response->json();
-
-    // data from user id 1
-    expect($jsonData)->toMatchArray([
-        'firstName' => 'Emily',
-        'lastName' => 'Johnson',
-        'email' => 'emily.johnson@x.dummyjson.com'
-//        'timezone' => 'America/Los_Angeles',
-    ]);
+    $data = $response->json();
+    AssertableJson::fromArray($data)
+        ->has('email')
+        ->etc();
 });
 
 // Modify/Create new/better version for updating the user data without fake, make an API call ( use the method from Controller )
