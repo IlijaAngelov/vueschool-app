@@ -15,7 +15,8 @@ use Illuminate\Support\Str;
 class UserController extends Controller
 {
 
-    public function users(){
+    // Get users in batch
+    public function users(): void{
         // modify limit
         $users = User::where('is_synced', 0)->limit(10)->get();
 
@@ -38,10 +39,10 @@ class UserController extends Controller
                }
            }
         });
+    }
 
 
-
-// Getting users from open API for testing
+// Getting users from open API for testing --- belongs to method above - users()
 //        $responses = Http::get((env('API_URL')), [
 //        ])->json();
 //        foreach($responses['users'] as $response) {
@@ -54,44 +55,35 @@ class UserController extends Controller
 //                'is_synced' => 0,
 //            ]);
 //        }
-    }
-    public function updateUser(){
 
-        $data = Http::get((env('API_URL') . '/' . rand(1, 100)))->json();
-        $user = User::where('email', $data['email'])->first();
-        User::updateOrCreate([
-            'email' => $data['email']],
-            [
-            'firstname' => $data['firstName'],
-            'lastname' => $data['lastName'],
-            'password' => Str::password(12),
-            'timezone' => $data['address']['stateCode'],
-            'is_synced' => 1,
-        ]);
+    // Single User Get and Update methods
+    public function getUser($id): array
+    {
+        return HTTP::get((env('API_USER_URL') . '/' . $id))->json();
     }
 
-    public function checkForUserUpdate(Request $request){
-        $user = User::findOrFail($request->id);
-
-        // Making new APi request for the user
-        $data = Http::get((env('API_URL') . '/' . $user->id))->json();
-        // Check if user has been updated, then conitnue to save the data, else abort
+    public function update($user): void
+    {
+        $apiUser = $this->getUser($user);
+        $dbUser = User::where('email', $apiUser['email'])->first();
         $dataToUpdate = [];
-        $data['updated_at'] = now();
-        if($data['updated_at'] > $user['updated_at']){
-            if(isset($data['firstName'])){
-                $dataToUpdate['firstname'] = $data['firstName'];
+
+        // There isnt 'last' updated_at param in the dummy api, so we will hard code updated_at to be now()
+        $apiUser['updated_at'] = now();
+        if($apiUser['updated_at'] > $dbUser['updated_at']){
+            if(isset($apiUser['firstName'])){
+                $dataToUpdate['firstname'] = $apiUser['firstName'];
             }
-            if(isset($data['lastName'])){
-                $dataToUpdate['lastname'] = $data['lastName'];
+//            $dataToUpdate['firstname'] = 'Eme';
+            if(isset($apiUser['lastName'])){
+                $dataToUpdate['lastname'] = $apiUser['lastName'];
             }
-            if(isset($data['address']['stateCode'])){
-                $dataToUpdate['timezone'] = $data['address']['stateCode'];
+            if(isset($apiUser['address']['stateCode'])){
+                $dataToUpdate['timezone'] = $apiUser['address']['stateCode'];
             }
             $dataToUpdate['is_synced'] = 1;
             $dataToUpdate['updated_at'] = now();
-
-            User::where('email', $user->email)->update($dataToUpdate);
+            User::where('email', $dbUser->email)->update($dataToUpdate);
         }
     }
 }
