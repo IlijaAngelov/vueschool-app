@@ -2,6 +2,7 @@
 
 // Arrange, Act, Assert(Expect)
 
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -29,7 +30,40 @@ test('the response comes in a standard format', function () {
         ->etc();
 });
 
-// Modify/Create new/better version for updating the user data without fake, make an API call ( use the method from Controller )
+test('the functionality of the getUser method', function () {
+    $controller = new UserController();
+
+    $response = $controller->getApiUser(1);
+    expect($response)->toMatchArray([
+        'firstName' => "Emily",
+        'email' => "emily.johnson@x.dummyjson.com"
+    ]);
+});
+
+test('updates user with newer data', function () {
+    $apiUser = User::factory()->create([
+        'id' => 1,
+        'firstname' => 'Eme',
+        'lastname' => 'Johnson',
+        'email' => 'emily.johnson@x.dummyjson.com',
+        'timezone' => 'America/Los_Angeles',
+        'is_synced' => 1,
+        'updated_at' => now()
+    ]);
+
+    $controller = new UserController();
+    // rabote, samo ako se iskomentirani tii dva metoda u update metodo, ama i treba istio metod da gi prima 2ta parametri
+    $controller->update($apiUser);
+
+    expect(User::latest()->first())
+        ->firstname->toBe('Eme')
+        ->lastname->toBe('Johnson')
+        ->timezone->toBe('America/Los_Angeles')
+        ->is_synced->toBe(1)
+        ->updated_at->diffInSeconds(now())->toBeLessThan(2);
+
+});
+
 test('update user data from an external API', function () {
 
     $oldUser = User::factory()->create([
