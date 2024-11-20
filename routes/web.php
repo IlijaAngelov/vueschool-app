@@ -18,7 +18,7 @@ Route::get('/test', function () {
 
 Route::get('/users', [UserController::class, 'users'])->middleware('throttle:batch');
 
-Route::get('/user/{id}', [UserController::class, 'getApiUser'])->middleware('throttle:updateUser');
+Route::get('/user/{id}', [UserController::class, 'getUser'])->middleware('throttle:updateUser');
 Route::get('user/{id}/update', [UserController::class, 'update'])->middleware('throttle:updateUser');
 
 Route::get('/user/update/{id}', [UserController::class, 'checkForUserUpdate'])->middleware('throttle:updateUser');

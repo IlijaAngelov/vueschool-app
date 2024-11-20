@@ -4,16 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SyncUsersJob;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Hash;
+use App\Service\UserService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schedule;
-use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+    public function __construct(
+        protected UserService $userService
+    ){}
 
     // Get users in batch
     public function users(): void{
@@ -57,38 +56,13 @@ class UserController extends Controller
 //        }
 
     // Single User Get and Update methods
-    public function getApiUser($id): array
+    public function getUser($id): array
     {
         return HTTP::get((env('API_USER_URL') . '/' . $id))->json();
     }
 
-    public function getDbUser($apiUser): User
-    {
-        return User::where('email', $apiUser['email'])->first();
-    }
-
     public function update($apiUser): void
     {
-        if(is_numeric($apiUser)){
-            $apiUser = $this->getApiUser($apiUser);
-        }
-        $dbUser = $this->getDbUser($apiUser);
-        $dataToUpdate = [];
-        // There isnt 'last' updated_at param in the dummy api, so we will hard code updated_at to be now()
-        $apiUser['updated_at'] = now();
-        if($apiUser['updated_at'] > $dbUser['updated_at']){
-            if(isset($apiUser['firstName'])){
-                $dataToUpdate['firstname'] = $apiUser['firstName'];
-            }
-            if(isset($apiUser['lastName'])){
-                $dataToUpdate['lastname'] = $apiUser['lastName'];
-            }
-            if(isset($apiUser['address']['stateCode'])){
-                $dataToUpdate['timezone'] = $apiUser['address']['stateCode'];
-            }
-            $dataToUpdate['is_synced'] = 1;
-            $dataToUpdate['updated_at'] = now();
-            User::where('email', $dbUser->email)->update($dataToUpdate);
-        }
+        $this->userService->update($apiUser);
     }
 }
