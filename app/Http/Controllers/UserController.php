@@ -55,7 +55,6 @@ class UserController extends Controller
 //            ]);
 //        }
 
-    // Single User Get and Update methods
     public function getUser($id): array
     {
         return HTTP::get((env('API_USER_URL') . '/' . $id))->json();

@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\DataTransferObjects\ApiUserDto;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
@@ -19,24 +20,26 @@ class UserRepository implements UserRepositoryInterface
         return User::where('email', $apiUser['email'])->first();
     }
 
-    public function update($apiUser)
+    public function update($data)
     {
-        if(is_numeric($apiUser)){
-            $apiUser = $this->getApiUser($apiUser);
+        if(is_numeric($data)){
+            $data = $this->getApiUser($data);
         }
-        $dbUser = $this->getDbUser($apiUser);
+        $apiUser = new ApiUserDto($data);
+        $dataApiUser = $apiUser->data;
+        $dbUser = $this->getDbUser($data);
         $dataToUpdate = [];
         // There isnt 'last' updated_at param in the dummy api, so we will hard code updated_at to be now()
-        $apiUser['updated_at'] = now();
-        if($apiUser['updated_at'] > $dbUser['updated_at']){
-            if(isset($apiUser['firstName'])){
-                $dataToUpdate['firstname'] = $apiUser['firstName'];
+        $dataApiUser['updated_at'] = now();
+        if($dataApiUser['updated_at'] > $dbUser['updated_at']){
+            if(isset($dataApiUser['firstName'])){
+                $dataToUpdate['firstname'] = $dataApiUser['firstName'];
             }
-            if(isset($apiUser['lastName'])){
-                $dataToUpdate['lastname'] = $apiUser['lastName'];
+            if(isset($dataApiUser['lastName'])){
+                $dataToUpdate['lastname'] = $dataApiUser['lastName'];
             }
-            if(isset($apiUser['address']['stateCode'])){
-                $dataToUpdate['timezone'] = $apiUser['address']['stateCode'];
+            if(isset($dataApiUser['address']['stateCode'])){
+                $dataToUpdate['timezone'] = $dataApiUser['address']['stateCode'];
             }
             $dataToUpdate['is_synced'] = 1;
             $dataToUpdate['updated_at'] = now();
